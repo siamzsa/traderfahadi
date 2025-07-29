@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TRADER FAHADI - Combined Bot with Hidden Analysis</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      padding-top: 40px;
+    }
+    .title {
+      color: #00ffff;
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      margin-bottom: 12px;
+    }
+    .subtitle {
+      color: #00ffff;
+      font-size: 20px;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+    .info {
+      margin-top: 10px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .timestamp {
+      margin-top: 25px;
+      font-size: 15px;
+    }
+    .input-box {
+      margin-top: 20px;
+    }
+    input[type="text"] {
+      padding: 12px 20px;
+      background-color: black;
+      border: none;
+      color: white;
+      font-size: 16px;
+      width: 300px;
+      outline: none;
+      text-align: center;
+      font-family: 'Courier New', monospace;
+      border-radius: 5px;
+      animation: glowAnimation 4s linear infinite;
+      box-shadow: 0 0 10px #fff;
+    }
+    @keyframes glowAnimation {
+      0% {
+        box-shadow: 0 0 10px #ff0080, 0 0 20px #ff0080, 0 0 30px #ff0080;
+      }
+      25% {
+        box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+      }
+      50% {
+        box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+      }
+      75% {
+        box-shadow: 0 0 10px #ffa500, 0 0 20px #ffa500, 0 0 30px #ffa500;
+      }
+      100% {
+        box-shadow: 0 0 10px #ff0080, 0 0 20px #ff0080, 0 0 30px #ff0080;
+      }
+    }
+    .signal-box {
+      margin-top: 12px;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+      animation: glowSignal 3s infinite alternate;
+      text-align: center;
+      white-space: pre-line;
+    }
+    @keyframes glowSignal {
+      0% { box-shadow: 0 0 10px #0ff; }
+      100% { box-shadow: 0 0 20px #f0f; }
+    }
+    .buy {
+      background-color: rgba(0, 255, 0, 0.2);
+      color: #00ff00;
+      border: 1px solid #00ff00;
+    }
+    .sell {
+      background-color: rgba(255, 0, 0, 0.2);
+      color: #ff4040;
+      border: 1px solid #ff4040;
+    }
+    #output {
+      margin: 20px auto;
+      width: 350px;
+      max-height: 300px;
+      overflow-y: auto;
+      background: #111;
+      border-radius: 10px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 14px;
+      color: #0ff;
+      text-align: center;
+    }
+    .signal {
+      margin-bottom: 8px;
+    }
+    .call {
+      background-color: rgba(0, 255, 0, 0.25);
+      color: #00ff00;
+      border: 1px solid #00ff00;
+      border-radius: 8px;
+      padding: 10px;
+      font-weight: bold;
+      animation: glowSignal 3s infinite alternate;
+      white-space: pre-line;
+      text-align: left;
+    }
+    .put {
+      background-color: rgba(255, 0, 0, 0.25);
+      color: #ff4040;
+      border: 1px solid #ff4040;
+      border-radius: 8px;
+      padding: 10px;
+      font-weight: bold;
+      animation: glowSignal 3s infinite alternate;
+      white-space: pre-line;
+      text-align: left;
+    }
+    .copy-button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      background-color: #00ffff;
+      color: black;
+      font-weight: bold;
+    }
+    .loading {
+      margin-top: 10px;
+      color: #00ffff;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      display: none;
+    }
+    .loading.active {
+      display: block;
+    }
+    .menu {
+      position: fixed;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 30px;
+      background-color: #111;
+      padding: 10px 30px;
+      border-radius: 30px;
+      box-shadow: 0 0 15px #00ffffaa;
+      user-select: none;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: #00ffff;
+      z-index: 100;
+    }
+    .menu-item {
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #00ffff;
+      transition: color 0.3s ease;
+    }
+    .menu-item:hover {
+      color: #00ff00;
+    }
+    .menu-item.active {
+      color: #00ff00;
+      font-weight: bold;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="title">TRADER FAHADI</div>
+
+  <!-- LIVE SIGNAL SECTION -->
+  <div id="liveSignalSection">
+    <div class="subtitle">PREMIUM LIVE BOT</div>
+
+    <div class="info">
+      CREATED BY : IFTEKAR MAHMUD<br>
+      BINARY BROKERS OTC FUTURES<br>
+      SIGNAL GEN<br>
+      VERSION : 4.0
+    </div>
+
+    <div class="timestamp" id="api-time-live">API CLONE : Loading...</div>
+
+    <div class="input-box">
+      <input type="text" id="marketInput" placeholder="Type market name..." />
+    </div>
+
+    <div id="signalOutput"></div>
+  </div>
+
+  <!-- FUTURE SIGNAL SECTION -->
+  <div id="futureSignalSection" class="hidden">
+    <div class="subtitle">PREMIUM FUTURE SIGNALS</div>
+
+    <div class="info">
+      CREATED BY : IFTEKAR MAHMUD<br>
+      BINARY BROKERS OTC FUTURES<br>
+      SIGNAL GEN<br>
+      VERSION : 4.0
+    </div>
+
+    <div class="timestamp" id="api-time-future">API CLONE : Loading...</div>
+
+    <div class="input-box">
+      <input
+        type="text"
+        id="terminal-input"
+        placeholder="Enter market name and press Enter"
+        onkeydown="handleMarketInput(event)"
+        autocomplete="off"
+      />
+    </div>
+
+    <div id="output" class="output"></div>
+
+    <button id="copy-btn" class="copy-button" style="display: none;" onclick="copySignals()">Copy Signals</button>
+
+    <div id="loading" class="loading">Loading...</div>
+  </div>
+
+  <!-- মেনু -->
+  <div class="menu">
+    <div class="menu-item active" id="liveSignalBtn" title="Live Signal">LIVE</div>
+    <div class="menu-item" id="futureSignalBtn" title="Future Signal">FUTURE</div>
+  </div>
+
+  <script>
+    // Update time for both sections
+    function updateTime() {
+      const now = new Date();
+
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      const year = now.getFullYear();
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const formatted = `${month}/${day}/${year} ${hours}:${minutes}:${seconds} ${ampm}`;
+
+      document.getElementById('api-time-live').textContent = `API CLONE : ${formatted}`;
+      document.getElementById('api-time-future').textContent = `API CLONE : ${formatted}`;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // Candlestick Patterns array for backend use only
+    const candlestickPatterns = [
+      "Hammer",
+      "Shooting Star",
+      "Engulfing Bullish",
+      "Engulfing Bearish",
+      "Doji",
+      "Morning Star",
+      "Evening Star",
+      "Harami Bullish",
+      "Harami Bearish",
+      "Piercing Line",
+      "Dark Cloud Cover",
+      "Three White Soldiers",
+      "Three Black Crows"
+    ];
+
+    // --- LIVE SIGNAL BOT ---
+    const marketInput = document.getElementById("marketInput");
+    const signalOutput = document.getElementById("signalOutput");
+
+    marketInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        const marketName = marketInput.value.trim();
+        if (marketName !== "") {
+          // Generate signal
+          const signals = ["BUY", "SELL"];
+          const chosen = signals[Math.floor(Math.random() * signals.length)];
+          const signalClass = chosen === "BUY" ? "buy" : "sell";
+
+          // Generate analysis and pattern (backend only)
+          generateAnalysis(); // Called but result not shown
+          candlestickPatterns[Math.floor(Math.random() * candlestickPatterns.length)]; // Chosen but not shown
+
+          // Show only signal
+          signalOutput.innerHTML = `
+            <div class="signal-box ${signalClass}">
+              ${marketName.toUpperCase()} SIGNAL: ${chosen}
+            </div>
+          `;
+        }
+      }
+    });
+
+    function generateAnalysis() {
+      const analysisOptions = [
+        "Strong Uptrend detected",
+        "Potential Reversal spotted",
+        "High volatility expected",
+        "Support level confirmed",
+        "Resistance level approached",
+        "Momentum weakening",
+        "Breakout imminent",
+        "Volume spike detected",
+        "Oversold condition",
+        "Overbought condition"
+      ];
+      // Return a random analysis, but caller ignores it for UI
+      return analysisOptions[Math.floor(Math.random() * analysisOptions.length)];
+    }
+
+    // --- FUTURE SIGNAL BOT ---
+    let marketName = '';
+    let numSignals = 0;
+    let signals = [];
+
+    function handleMarketInput(event) {
+      if (event.key === "Enter") {
+        const inputValue = document.getElementById('terminal-input').value.trim();
+        if (!marketName) {
+          marketName = formatMarketName(inputValue);
+          document.getElementById('terminal-input').placeholder = "Enter number of signals";
+        } else if (!numSignals) {
+          numSignals = parseInt(inputValue);
+          if (isNaN(numSignals) || numSignals <= 0) {
+            alert("Please enter a valid number of signals");
+            document.getElementById('terminal-input').value = '';
+            return;
+          }
+          document.getElementById('terminal-input').placeholder = "Generating signals...";
+          showLoading(true);
+          setTimeout(generateSignals, 5000);
+        }
+        document.getElementById('terminal-input').value = '';
+      }
+    }
+
+    function formatMarketName(input) {
+      let formattedMarket = input.toUpperCase();
+      if (formattedMarket.includes("/")) {
+        formattedMarket = formattedMarket.replace("/", "/") + " - OTC";
+      }
+      return formattedMarket;
+    }
+
+    function generateSignals() {
+      signals = [];
+      let signalTime = new Date();
+
+      for (let i = 0; i < numSignals; i++) {
+        const hours = signalTime.getHours() % 12 || 12;
+        const minutes = signalTime.getMinutes();
+        const ampm = signalTime.getHours() >= 12 ? 'PM' : 'AM';
+        const signalType = Math.random() < 0.5 ? "CALL" : "PUT";
+
+        // Backend analysis - generated but not shown
+        generateAnalysis();
+        candlestickPatterns[Math.floor(Math.random() * candlestickPatterns.length)];
+
+        const signalText = `${marketName} • ${hours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm} ${signalType}`;
+
+        const signalClass = signalType === "CALL" ? "call" : "put";
+
+        signals.push({ text: signalText, className: signalClass });
+
+        signalTime.setMinutes(signalTime.getMinutes() + 2);
+      }
+
+      displaySignals();
+      showLoading(false);
+    }
+
+    function displaySignals() {
+      const outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = '';
+      signals.forEach(signal => {
+        const signalDiv = document.createElement('div');
+        signalDiv.classList.add('signal-box', signal.className);
+        signalDiv.textContent = signal.text;
+        outputDiv.appendChild(signalDiv);
+      });
+      document.getElementById('copy-btn').style.display = 'inline-block';
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
+
+    function copySignals() {
+      const signalsText = signals.map(s => s.text).join("\n\n");
+      const textarea = document.createElement('textarea');
+      textarea.value = signalsText;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+
+    function showLoading(isLoading) {
+      const loadingDiv = document.getElementById('loading');
+      if (isLoading) {
+        loadingDiv.classList.add('active');
+      } else {
+        loadingDiv.classList.remove('active');
+      }
+    }
+
+    // Menu toggles
+    const liveSignalBtn = document.getElementById('liveSignalBtn');
+    const futureSignalBtn = document.getElementById('futureSignalBtn');
+
+    const liveSignalSection = document.getElementById('liveSignalSection');
+    const futureSignalSection = document.getElementById('futureSignalSection');
+
+    liveSignalBtn.addEventListener('click', () => {
+      liveSignalBtn.classList.add('active');
+      futureSignalBtn.classList.remove('active');
+
+      liveSignalSection.classList.remove('hidden');
+      futureSignalSection.classList.add('hidden');
+    });
+
+    futureSignalBtn.addEventListener('click', () => {
+      futureSignalBtn.classList.add('active');
+      liveSignalBtn.classList.remove('active');
+
+      futureSignalSection.classList.remove('hidden');
+      liveSignalSection.classList.add('hidden');
+    });
+  </script>
+</body>
+</html>
